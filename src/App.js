@@ -10,6 +10,7 @@ const App = () => {
   const [recipes, setRecipes] = useState([]);
   const [search, setSearch] = useState("");
   const [query, setQuery] = useState("vegan");
+
   const filters = [
     {
       type: "health",
@@ -41,7 +42,7 @@ const App = () => {
     );
     const data = await response.json();
     setRecipes(data.hits);
-    console.log(data.hits);
+    
   };
 
   const updateSearch = (e) => {
@@ -70,7 +71,9 @@ const App = () => {
         </div>
         <div className="diet-filter">
           {filters.map((param) => (
-            <DietFilter name={param.name} param={param.param} />
+            <DietFilter name={param.name} param={param.param} callback={()=>{
+              console.log("hello");
+            }} />
           ))}
         </div>
       </form>
