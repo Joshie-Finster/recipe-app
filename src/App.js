@@ -9,8 +9,8 @@ const App = () => {
   const APP_KEY = process.env.REACT_APP_APP_KEY;
   const [recipes, setRecipes] = useState([]);
   const [search, setSearch] = useState("");
-  const [query, setQuery] = useState("pineapple");
-  const [checked, setChecked]=useState([]);
+  const [query, setQuery] = useState("pizza");
+  const [checked, setChecked] = useState([]);
 
   const filters = [
     {
@@ -18,44 +18,54 @@ const App = () => {
       name: "Gluten Free",
       param: "gluten-free",
       info: "No ingredients containing Gluten",
-      checked: false
+      checked: false,
     },
     {
       type: "health",
       name: "Paleo",
       param: "paleo",
       info: "Excludes what are perceived to be agricultural products; grains, legumes, dairy products, potatoes, refined salt, refined sugar, and processed oils ",
-      checked: false
+      checked: false,
     },
     {
       type: "health",
       name: "Vegan",
       param: "vegan",
       info: "No meat, poultry, fish, dairy, eggs or honey ",
-      checked: true
+      checked: true,
     },
   ];
 
-  useEffect(() => {
-    getRecipes();
+  useEffect(() => {  
     var currentChecked = checked;
-    filters.map((param)=>{
-      if (param.checked){
+    filters.map((param) => {
+      if (param.checked) {
         currentChecked.push(param.param);
       }
-      console.log(param)
-    })
+    });
     setChecked(currentChecked);
-    console.log(currentChecked);
-  }, [query]);
+    getRecipes();
+  }, []);
+
+  useEffect(()=>{
+    getRecipes();
+  },[query])
+
+  useEffect(()=>{
+    getRecipes();
+  },[checked])
 
   const getRecipes = async () => {
+    var searchString = checked.map((e)=>{
+      return "&health="+ e
+    }).join("")
+    console.log(checked)
     const response = await fetch(
-      `https://api.edamam.com/search?q=${query}&app_id=${APP_ID}&app_key=${APP_KEY}&health=vegan`
+      `https://api.edamam.com/search?q=${query}&app_id=${APP_ID}&app_key=${APP_KEY}`+ searchString
     );
     const data = await response.json();
     setRecipes(data.hits);
-    
+    console.log(`https://api.edamam.com/search?q=${query}&app_id=${APP_ID}&app_key=${APP_KEY}`+ searchString)
   };
 
   const updateSearch = (e) => {
@@ -84,9 +94,25 @@ const App = () => {
         </div>
         <div className="diet-filter">
           {filters.map((param) => (
-            <DietFilter name={param.name} param={param.param} defaultChecked={param.checked} callback={(checked)=>{
-              console.log(checked);
-            }} />
+            <DietFilter
+              name={param.name}
+              param={param.param}
+              defaultChecked={param.checked}
+              callback={(isChecked) => {
+                var currentChecked = checked;
+                if (isChecked) {
+                  currentChecked.push(param.param);
+                } else {
+                  currentChecked = currentChecked.filter(
+                    (value) => value !== param.param
+                  );
+                }
+
+                setChecked(currentChecked);
+            
+
+              }}
+            />
           ))}
         </div>
       </form>
