@@ -1,18 +1,19 @@
 import React, { useState } from "react";
 import "./App.css";
 
-const DietFilter = ({ type, name, param, info, callback }) => {
-  const [checked, setChecked] = useState(false);
+const DietFilter = (props) => {
+  const [checked, setChecked] = useState(props.defaultChecked);
 
-  const isChecked = (check) => {
-    console.log(check);
-    callback();
+  const isChecked = () => {
+    var newCheck = !checked;
+    setChecked(newCheck)
+    props.callback(newCheck);
 
   };
   return (
     <div className="checkbox">
-      <label key={param}> {name}</label>
-      <input type="checkbox" onChange={isChecked} />
+      <label key={props.param}> {props.name}</label>
+      <input type="checkbox" defaultChecked={props.defaultChecked} onChange={isChecked} />
     </div>
   );
 };
