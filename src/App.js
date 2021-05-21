@@ -14,6 +14,13 @@ const App = () => {
 
   const filters = [
     {
+      type: "diet",
+      name: "Low-Carb",
+      param: "low-carb",
+      info: "Less than 20% of total calories from carbs",
+      checked: false,
+    },
+    {
       type: "health",
       name: "Gluten Free",
       param: "gluten-free",
@@ -34,38 +41,60 @@ const App = () => {
       info: "No meat, poultry, fish, dairy, eggs or honey ",
       checked: true,
     },
+    {
+      type: "health",
+      name: "Peanuts",
+      param: "peanut-free",
+      info: "No peanuts or products containing peanuts",
+      checked: false,
+    },
   ];
 
-  useEffect(() => {  
-    var currentChecked = checked;
+  useEffect(() => {
+    var currentChecked = [...checked];
     filters.map((param) => {
       if (param.checked) {
         currentChecked.push(param.param);
       }
+      return null;
     });
     setChecked(currentChecked);
     getRecipes();
   }, []);
 
-  useEffect(()=>{
+  useEffect(() => {
     getRecipes();
-  },[query])
 
-  useEffect(()=>{
-    getRecipes();
-  },[checked])
+    console.log("checked", checked);
+  }, [query, checked]);
 
   const getRecipes = async () => {
-    var searchString = checked.map((e)=>{
-      return "&health="+ e
-    }).join("")
-    console.log(checked)
+  
+    var dietSearch = checked.map((cx) => {
+      var i = filters.findIndex(x => x.param == cx);
+      console.log(i)
+      if (filters[i].type === "diet") {
+        return "&diet=" + cx;
+      }
+    });
+    var healthSearch = checked.map((cx) => {
+      var i = filters.findIndex(x => x.param == cx);
+      if (filters[i].type === "health") {
+        return "&health=" + cx;
+      }
+    });
+    const searchString = dietSearch.concat(healthSearch).join("");
+
     const response = await fetch(
-      `https://api.edamam.com/search?q=${query}&app_id=${APP_ID}&app_key=${APP_KEY}`+ searchString
+      `https://api.edamam.com/search?q=${query}&app_id=${APP_ID}&app_key=${APP_KEY}` +
+        searchString
     );
     const data = await response.json();
     setRecipes(data.hits);
-    console.log(`https://api.edamam.com/search?q=${query}&app_id=${APP_ID}&app_key=${APP_KEY}`+ searchString)
+    console.log(
+      `https://api.edamam.com/search?q=${query}&app_id=${APP_ID}&app_key=${APP_KEY}` +
+        searchString
+    );
   };
 
   const updateSearch = (e) => {
@@ -95,11 +124,12 @@ const App = () => {
         <div className="diet-filter">
           {filters.map((param) => (
             <DietFilter
+              key={param.param}
               name={param.name}
               param={param.param}
               defaultChecked={param.checked}
               callback={(isChecked) => {
-                var currentChecked = checked;
+                var currentChecked = [...checked];
                 if (isChecked) {
                   currentChecked.push(param.param);
                 } else {
@@ -109,8 +139,6 @@ const App = () => {
                 }
 
                 setChecked(currentChecked);
-            
-
               }}
             />
           ))}
